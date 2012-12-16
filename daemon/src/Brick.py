@@ -7,7 +7,7 @@ import Client
 import Request
 
 TCP_IP = "0.0.0.0"
-TCP_PORT = 63996
+TCP_PORT = 6666
 BUFFER_SIZE = 4
 
 connections = []
@@ -16,7 +16,7 @@ server = None
 
 def main():
 	global server
-	print "Starting Brick server"
+	print "Starting \033[0;36mBrick Hub\033[0m"
 
 	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	server.setblocking(0)
