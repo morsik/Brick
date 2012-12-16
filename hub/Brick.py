@@ -8,7 +8,7 @@ import Request
 
 TCP_IP = "0.0.0.0"
 TCP_PORT = 6666
-BUFFER_SIZE = 4
+BUFFER_SIZE = 4096
 
 connections = []
 
@@ -16,7 +16,6 @@ server = None
 
 def main():
 	global server
-	print "Starting \033[0;36mBrick Hub\033[0m"
 
 	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	server.setblocking(0)
@@ -24,7 +23,7 @@ def main():
 	try:
 		server.bind((TCP_IP, TCP_PORT))
 	except socket.error, e:
-		print "\033[1;33m%s\033[0m" % e
+		print("\033[1;33m%s\033[0m" % e)
 		sys.exit(1)
 	server.listen(5)
 
@@ -37,7 +36,7 @@ def main():
 			if c is server:
 				conn, address = c.accept()
 				addr = "%s:%s" % address
-				print "[%s] BEGIN" % (addr)
+				print("[%s] BEGIN" % (addr))
 				conn.setblocking(0)
 				connections.append(conn)
 				queue[addr] = {
@@ -50,7 +49,7 @@ def main():
 				if not data:
 					del queue[addr]
 					connections.remove(c)
-					print "[%s] END" % (addr)
+					print("[%s] END" % (addr))
 					Client.Remove(addr)
 					break
 
@@ -66,7 +65,8 @@ def main():
 
 if __name__ == "__main__":
 	try:
+		print("Starting \033[0;36mBrick Hub\033[0m")
 		main()
 	except KeyboardInterrupt:
-		print "Shutting down Brick..."
+		print("\033[0GShutting down \033[0;36mBrick Hub\033[0m")
 		server.close()

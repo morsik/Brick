@@ -12,7 +12,7 @@ def Add(c):
 	if c['type'] == CLIENT_ADMIN:
 		print("\033[1;33madmin added [%s from %s]\033[0m" % (c['username'], c['address']))
 	elif c['type'] == CLIENT_SLAVE:
-		print("\033[1;33mslave added [%s from %s]\033[0m" % (c['hostname'], c['address']))
+		print("\033[1;32mslave added [%s from %s]\033[0m" % (c['hostname'], c['address']))
 
 	return True
 
@@ -21,7 +21,10 @@ def Remove(addr):
 	try:
 		for c in clients:
 			if c['address'] == addr:
-				print("\033[1;33madmin removed [%s from %s]\033[0m" % (c['username'], c['address']))
+				if c['type'] == CLIENT_ADMIN:
+					print("\033[1;33madmin removed [%s from %s]\033[0m" % (c['username'], c['address']))
+				elif c['type'] == CLIENT_SLAVE:
+					print("\033[1;32madmin removed [%s from %s]\033[0m" % (c['hostname'], c['address']))
 				clients.remove(c)
 	except ValueError:
 		pass
