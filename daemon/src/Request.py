@@ -6,9 +6,7 @@ def Parse(addr, message):
 	try:
 		if not Client.Authorized(addr):
 			if data[0] == "auth":
-				authdata = Client.Auth(data[1], data[2])
-				if authdata:
-					Client.Add(addr)
+				if Client.Auth(addr, data[1], data[2], data[3]):
 					return "ok"
 				else:
 					return "fail"
@@ -25,6 +23,13 @@ def Parse(addr, message):
 
 				elif data[1] == "del":
 					return "fail"
+
+			if data[0] == "list":
+				if len(data) > 1:
+					if data[1]:
+						return Client.List([data[1]])
+				else:
+					return Client.List()
 
 	except IndexError:
 		return "request invalid"
