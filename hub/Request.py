@@ -1,7 +1,7 @@
 import Client
 
 def Parse(addr, message):
-	print "[%s] %s" % (addr, message)
+	print("[%s] %s" % (addr, message))
 	data = message.strip().split(' ')
 	try:
 		isauth = Client.Authorized(addr)
