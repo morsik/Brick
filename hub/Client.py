@@ -74,3 +74,13 @@ def Authorized(addr):
 			return c['type']
 
 	return False
+
+def getByAddr(addr):
+	for c in clients:
+		if addr == c['address']:
+			if 'username' in c:
+				return c['username']
+			elif 'hostname' in c:
+				return c['hostname']
+
+	return '-unknown-'
