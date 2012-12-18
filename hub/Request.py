@@ -8,7 +8,7 @@ def Parse(addr, message):
 		if not isauth:
 			if data[0] == "auth":
 				if Client.Auth(addr, data[1], data[2], data[3]):
-					return "ok Brick 0.1"
+					return "ok BrickHub 0.1"
 				else:
 					return "fail"
 			else:

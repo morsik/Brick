@@ -6,6 +6,8 @@ import socket
 from time import sleep
 import Request
 
+DEBUG = True
+
 TCP_IP = "127.0.0.1"
 TCP_PORT = 6666
 BUFFER_SIZE = 4096
@@ -39,7 +41,9 @@ def main():
 			if client:
 				tosend = Request.Parse(data)
 				if tosend:
-					client.send(tosend, 4096)
+					if DEBUG:
+						print("\033[0;33msend\033[0m> %s" % (tosend))
+					client.send("%s\n" % (tosend))
 
 				data = client.recv(BUFFER_SIZE).strip()
 			else:
