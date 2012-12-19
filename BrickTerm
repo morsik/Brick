@@ -1,0 +1,79 @@
+#!/usr/bin/python
+
+import os
+import sys
+import socket
+import json
+
+TCP_IP = "127.0.0.1"
+TCP_PORT = 6666
+
+def main():
+	c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	c.connect((TCP_IP, TCP_PORT))
+
+	req = sys.argv[1:]
+
+	"""Authorize me"""
+	c.send("auth adm admin 1234\n")
+	data = c.recv(4096).strip().split(' ')
+	if data[0] == 'ok':
+		print("\033[0;36m%s\033[0m \033[0;33m%s\033[0m" % (data[1], data[2]))
+	else:
+		print("Connection failed.")
+		exit(1)
+
+	c.send("%s\n" % (' '.join(req)))
+
+	_donotsend = False
+	if len(req) > 1:
+		if req[1] == 'add':
+			_donotsend = True
+	
+	if not _donotsend:
+		data = c.recv(4096).strip()
+	#print(">>>\n%s\n>>>" % data)
+
+	if req[0] == 'list':
+		d = json.loads(data)
+		if 'admins' in d and len(d['admins']) > 0:
+			print("")
+			print("Connected Admins:")
+			for x in d['admins']:
+				print("  \033[0;36m%-15s\033[0m %s" % (x['address'].split(':')[0], x['username']))
+
+		if 'slaves' in d and len(d['slaves']) > 0:
+			print("")
+			print("Connected Slaves:")
+			for x in d['slaves']:
+				print("  %-15s %s" % (x['address'].split(':')[0], x['hostname']))
+
+	elif req[0] == 'task' and req[1] == 'list':
+		d = json.loads(data)
+		print("Current tasks:")
+		for t in d['tasklist']:
+			c = '0'
+			host = ''
+			if t['state'] == 0:
+				c = '0;31'
+				state = "-waiting-"
+			elif t['state'] == 1:
+				c = '0;33'
+				state = "pulled"
+				host = "%-16s  (%s)" % (t['slave']['hostname'], t['slave']['address'])
+			elif t['state'] == 2:
+				c = '1;32'
+				state = "working"
+				host = "%-16s  (%s)" % (t['slave']['hostname'], t['slave']['address'])
+			elif t['state'] == -1:
+				c = '1;31'
+				state = "crashed"
+
+			print("  \033[1;36m%-16s\033[0m \033[%sm%-8s\033[0m  %s" % (t['name'], c, state, host))
+	else:
+		print("Unknown command.")
+		print(data)
+	
+
+if __name__ == "__main__":
+	main()

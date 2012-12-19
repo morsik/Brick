@@ -4,7 +4,9 @@ import select
 import sys
 import socket
 from time import sleep
+
 import Request
+import Worker
 
 DEBUG = True
 
@@ -19,7 +21,7 @@ def connect():
 	global client, connected
 	try:
 		if connected == False:
-			sleep(1)
+			sleep(5)
 		client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		client.connect((TCP_IP, TCP_PORT))
 		connected = True
@@ -28,6 +30,7 @@ def connect():
 		if connected or connected == None:
 			print("\033[1;31mCan't connect to %s:%s\033[0m: %s" % (TCP_IP, TCP_PORT, err[1]))
 			connected = False
+			Worker.setWorking(False)
 
 
 def main():
@@ -39,7 +42,7 @@ def main():
 	while True:
 		try:
 			if client:
-				tosend = Request.Parse(data)
+				tosend = Request.Parse(client, data)
 				if tosend:
 					if DEBUG:
 						print("\033[0;33msend\033[0m> %s" % (tosend))

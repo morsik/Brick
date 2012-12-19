@@ -39,6 +39,7 @@ def main():
 				addr = "%s:%s" % address
 				print("[%s] BEGIN" % (addr))
 				conn.setblocking(0)
+				Client.Add(conn, "%s:%s" % (address))
 				connections.append(conn)
 				queue[addr] = {
 					'data' : "",
@@ -62,8 +63,8 @@ def main():
 					message, queue[addr]['data'] = queue[addr]['data'].split('\n', 1)
 					queue[addr]['length'] = None
 					reply = Request.Parse(addr, message)
-					c.send("%s\n" % (reply))
-
+					if reply != None and reply != False and reply != True:
+						c.send("%s\n" % (reply))
 		sleep(0.01)
 
 if __name__ == "__main__":

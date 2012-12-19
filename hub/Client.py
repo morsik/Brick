@@ -1,20 +1,37 @@
 import json
 
+import Task
+
+CLIENT_UNKNOWN = 0
 CLIENT_ADMIN = 1
 CLIENT_SLAVE = 2
 
 clients = []
 
 
-def Add(c):
-	clients.append(c)
+def Add(connection, address):
+	clients.append({
+		'conn' : connection,
+		'address' : address,
+		'type' : CLIENT_UNKNOWN,
+	})
 
-	if c['type'] == CLIENT_ADMIN:
-		print("\033[1;33madmin added [%s from %s]\033[0m" % (c['username'], c['address']))
-	elif c['type'] == CLIENT_SLAVE:
-		print("\033[1;32mslave added [%s from %s]\033[0m" % (c['hostname'], c['address']))
+#	if c['type'] == CLIENT_ADMIN:
+#		print("\033[1;33madmin added [%s from %s]\033[0m" % (c['username'], c['address']))
+#	elif c['type'] == CLIENT_SLAVE:
+#		print("\033[1;32mslave added [%s from %s]\033[0m" % (c['hostname'], c['address']))
 
 	return True
+
+
+def Modify(addr, data):
+	for c in clients:
+		if c['address'] == addr:
+			for k,v in data.items():
+				c[k] = v
+			return True
+
+	return False
 
 
 def Remove(addr):
@@ -25,6 +42,7 @@ def Remove(addr):
 					print("\033[1;33madmin removed [%s from %s]\033[0m" % (c['username'], c['address']))
 				elif c['type'] == CLIENT_SLAVE:
 					print("\033[1;32madmin removed [%s from %s]\033[0m" % (c['hostname'], c['address']))
+					Task.setTask(Task.getTaskBySlaveAddr(addr), Task.STATE_BROKEN)
 				clients.remove(c)
 	except ValueError:
 		pass
@@ -37,21 +55,25 @@ def List(show = ['admins', 'slaves']):
 		out['admins'] = []
 		for c in clients:
 			if c['type'] == CLIENT_ADMIN:
-				out['admins'].append(c)
+				out['admins'].append(c.copy())
+		for x in out['admins']:
+			x.pop('conn')
 
 	if 'slaves' in show:
 		out['slaves'] = []
 		for c in clients:
 			if c['type'] == CLIENT_SLAVE:
-				out['slaves'].append(c)
-
+				out['slaves'].append(c.copy())
+		for x in out['slaves']:
+			x.pop('conn')
+	
 	return json.dumps(out)
 
 
 def Auth(addr, client_type, clientname, password):
 	if client_type == "adm":
 		if clientname == "admin" and password == "1234":
-			return Add({
+			return Modify(addr, {
 				'type'     : CLIENT_ADMIN,
 				'address'  : addr,
 				'username' : clientname,
@@ -59,10 +81,11 @@ def Auth(addr, client_type, clientname, password):
 
 	elif client_type == "slave":
 		if password == "imslave!":
-			return Add({
+			return Modify(addr, {
 				'type'     : CLIENT_SLAVE,
 				'address'  : addr,
 				'hostname' : clientname,
+				'state'    : Task.STATE_WAITING,
 			})
 
 	return False
@@ -71,7 +94,7 @@ def Auth(addr, client_type, clientname, password):
 def Authorized(addr):
 	for c in clients:
 		if addr == c['address']:
-			return c['type']
+			return (c['type'], c)
 
 	return False
 
@@ -84,3 +107,29 @@ def getByAddr(addr):
 				return c['hostname']
 
 	return '-unknown-'
+
+
+def Send(addr, data):
+	for c in clients:
+		if c['address'] == addr:
+			c['conn'].send(data)
+			return True
+	return False
+
+
+def SendToAll(data, category = ['admins', 'slaves']):
+	for c in clients:
+		if 'admins' in category and c['type'] == CLIENT_ADMIN:
+			c['conn'].send(data)
+		if 'slaves' in category and c['type'] == CLIENT_SLAVE:
+			if c['state'] == 0:
+				c['conn'].send(data)
+	return True
+
+
+def setState(addr, state):
+	for c in clients:
+		if c['type'] == CLIENT_SLAVE and c['address'] == addr:
+			c['state'] = state	
+			return True
+	return False
