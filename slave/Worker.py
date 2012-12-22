@@ -32,7 +32,8 @@ def doTask(cmdline):
 		ts_start = time.time()
 		while p.poll() is None:
 			ln = p.stdout.readline()
-			printts(ts_start, ln)
+			if ln:
+				printts(ts_start, ln)
 			#out += ln
 
 		print("Total command time: %.8fs" % (time.time() - ts_start))
@@ -49,4 +50,4 @@ def doTask(cmdline):
 
 
 def printts(ts_start, msg):
-	print("[%12.4f] %s" % (time.time() - ts_start, msg.strip()))
+	print("[%12.4f] %s" % (time.time() - ts_start, msg.rstrip()))
