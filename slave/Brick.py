@@ -19,6 +19,7 @@ connected = None
 
 def connect():
 	global client, connected
+
 	try:
 		if connected == False:
 			sleep(5)
@@ -31,7 +32,6 @@ def connect():
 			print("\033[1;31mCan't connect to %s:%s\033[0m: %s" % (TCP_IP, TCP_PORT, err[1]))
 			connected = False
 			Worker.setWorking(False)
-
 
 def main():
 	global client, connected
@@ -51,7 +51,7 @@ def main():
 				data = client.recv(BUFFER_SIZE).strip()
 			else:
 				if connected or connected == None:
-					print("Not connected. Connecting. Autoreconnect every 1 second")
+					print("Not connected. Connecting. Autoreconnect every 5 second")
 				connect()
 
 		except socket.error as err:

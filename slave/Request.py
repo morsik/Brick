@@ -44,6 +44,7 @@ def Parse(conn, message):
 		else:
 			"""We're not waiting for something specific?"""
 			"""Assume it's json going from Hub"""
+
 			data = json.loads(message)
 			if 'tasklist' in data:
 				if Worker.isFree():
@@ -53,13 +54,6 @@ def Parse(conn, message):
 			elif 'task' in data:
 				print("Starting task \033[0;36m%s\033[0m" % data['task']['name'])
 				conn.send('task started\n')
-				ret = Worker.doTask(data['task']['cmd'])
-				if ret:
-					return 'task finished\ntask get'
-				#	conn.send('task finished\n')
-				else:
-					return 'task failed\ntask get'
-				#	conn.send('task failed\n')
-				#return 'task list'
+				ret = Worker.start_task(conn, data['task']['cmd'])
 
 	return None
