@@ -25,18 +25,15 @@ def Add(client, name, cmd):
 		if c['type'] == Client.CLIENT_SLAVE:
 			d = getWaitingTask(c)
 			if d:
-				c['conn'].send("%s\n" % d)
+				c['conn'].send("%s" % d)
 #			Client.SendToAll(getWaitingTask(c), ['slaves'])
 	return True
 
-
 def Delete(name):
-	return True
-
+	return False
 
 def List():
 	return json.dumps({'tasklist' : tasks})
-
 
 def finishTask(task):
 	for t in tasks:
@@ -45,7 +42,6 @@ def finishTask(task):
 			tasks.remove(t)
 			return True
 	return False
-		
 
 def getWaitingTask(slave):
 	if slave['state'] > STATE_WAITING:
@@ -68,7 +64,6 @@ def getWaitingTask(slave):
 			})
 	return False
 
-
 def setTask(task, work_state):
 	for t in tasks:
 		if t['name'] == task:
@@ -77,7 +72,6 @@ def setTask(task, work_state):
 				t['slave'] = None
 			return True
 	return False
-
 
 def getTaskBySlaveAddr(addr):
 	for t in tasks:

@@ -8,21 +8,14 @@ CLIENT_SLAVE = 2
 
 clients = []
 
-
-def Add(connection, address):
+def Add(connection):
 	clients.append({
 		'conn' : connection,
-		'address' : address,
+		'address' : connection.remote_addr(),
 		'type' : CLIENT_UNKNOWN,
 	})
 
-#	if c['type'] == CLIENT_ADMIN:
-#		print("\033[1;33madmin added [%s from %s]\033[0m" % (c['username'], c['address']))
-#	elif c['type'] == CLIENT_SLAVE:
-#		print("\033[1;32mslave added [%s from %s]\033[0m" % (c['hostname'], c['address']))
-
 	return True
-
 
 def Modify(addr, data):
 	for c in clients:
@@ -32,7 +25,6 @@ def Modify(addr, data):
 			return True
 
 	return False
-
 
 def Remove(addr):
 	try:
@@ -46,7 +38,6 @@ def Remove(addr):
 				clients.remove(c)
 	except ValueError:
 		pass
-
 
 def List(show = ['admins', 'slaves']):
 	out = {}
@@ -69,7 +60,6 @@ def List(show = ['admins', 'slaves']):
 	
 	return json.dumps(out)
 
-
 def Auth(addr, client_type, clientname, password):
 	if client_type == "adm":
 		if clientname == "admin" and password == "1234":
@@ -90,13 +80,12 @@ def Auth(addr, client_type, clientname, password):
 
 	return False
 
-
 def Authorized(addr):
 	for c in clients:
 		if addr == c['address']:
 			return (c['type'], c)
 
-	return False
+	return (False, None)
 
 def getByAddr(addr):
 	for c in clients:
@@ -108,14 +97,12 @@ def getByAddr(addr):
 
 	return '-unknown-'
 
-
 def Send(addr, data):
 	for c in clients:
 		if c['address'] == addr:
 			c['conn'].send(data)
 			return True
 	return False
-
 
 def SendToAll(data, category = ['admins', 'slaves']):
 	for c in clients:
@@ -125,7 +112,6 @@ def SendToAll(data, category = ['admins', 'slaves']):
 			if c['state'] == 0:
 				c['conn'].send(data)
 	return True
-
 
 def setState(addr, state):
 	for c in clients:

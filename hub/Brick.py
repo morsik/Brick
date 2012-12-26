@@ -4,67 +4,20 @@ import select
 import sys
 import socket
 from time import sleep
+
 import Client
 import Request
-
-TCP_IP = "0.0.0.0"
-TCP_PORT = 6666
-BUFFER_SIZE = 4096
-
-connections = []
-
-server = None
+from ConnectionSocketServer import ConnectionSocketServer
+from SignalHandler import signals
 
 def main():
-	global server
+	server = ConnectionSocketServer()
 
-	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	server.setblocking(0)
-	server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-	try:
-		server.bind((TCP_IP, TCP_PORT))
-	except socket.error as e:
-		print("\033[1;33m%s\033[0m" % e)
-		sys.exit(1)
-	server.listen(5)
+	signals.connect('Connection::Connected', Client.Add)
+	signals.connect('Connection::Disconnected', Client.Remove)
+	signals.connect('Connection::DataReceived', Request.Parse)
 
-	queue = {}
-
-	while True:
-		rlist, wlist, xlist = select.select([server] + connections, [server] + connections, [])
-
-		for c in rlist:
-			if c is server:
-				conn, address = c.accept()
-				addr = "%s:%s" % address
-				print("[%s] BEGIN" % (addr))
-				conn.setblocking(0)
-				Client.Add(conn, "%s:%s" % (address))
-				connections.append(conn)
-				queue[addr] = {
-					'data' : "",
-					'length' : None,
-				}
-			else:
-				addr = "%s:%s" % (c.getpeername())
-				data = c.recv(BUFFER_SIZE)
-				if not data:
-					del queue[addr]
-					connections.remove(c)
-					print("[%s] END" % (addr))
-					Client.Remove(addr)
-					break
-
-				queue[addr]['data'] += data
-				while True:
-					if queue[addr]['length'] is None:
-						if '\n' not in queue[addr]['data']:
-							break
-					message, queue[addr]['data'] = queue[addr]['data'].split('\n', 1)
-					queue[addr]['length'] = None
-					reply = Request.Parse(addr, message)
-					if reply != None and reply != False and reply != True:
-						c.send("%s\n" % (reply))
+	while server.pool():
 		sleep(0.01)
 
 if __name__ == "__main__":
