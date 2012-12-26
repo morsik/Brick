@@ -74,6 +74,7 @@ def main():
 		print("Unknown command.")
 		print(data)
 	
+	c.close()
 
 if __name__ == "__main__":
 	main()

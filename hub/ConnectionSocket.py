@@ -2,12 +2,9 @@ import settings
 import socket
 
 class ConnectionSocket():
-	def __init__(self, use_socket=None, queue=None):
+	def __init__(self, use_socket=None):
 		if use_socket:
 			self.socket = use_socket
-			self.queue = None
-			if queue:
-				self.queue = queue
 		else:
 			self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.socket.setblocking(False)
